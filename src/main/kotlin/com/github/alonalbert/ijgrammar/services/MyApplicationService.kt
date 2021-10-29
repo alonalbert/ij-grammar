@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package com.github.alonalbert.ijgrammar.services
 
-import org.jetbrains.plugins.template.MyBundle
+import com.github.alonalbert.ijgrammar.MyBundle
 
 class MyApplicationService {
 
