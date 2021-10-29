@@ -9,10 +9,23 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.alonalbert.ijgrammar.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.alonalbert.ijgrammar.services.MyProjectService"/>
+
+        <fileType
+                name="Simple File"
+                implementationClass="com.github.alonalbert.ijgrammar.grammar.SimpleFileType"
+                fieldName="INSTANCE"
+                language="Simple"
+                extensions="simple"
+        />
+        <lang.parserDefinition
+                language="Simple"
+                implementationClass="com.github.alonalbert.ijgrammar.grammar.SimpleParserDefinition"
+        />
     </extensions>
 
     <applicationListeners>
-        <listener class="com.github.alonalbert.ijgrammar.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+        <listener
+                class="com.github.alonalbert.ijgrammar.listeners.MyProjectManagerListener"
+                topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
 </idea-plugin>
