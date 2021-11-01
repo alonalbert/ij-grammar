@@ -7,6 +7,7 @@ import com.intellij.lang.ParserDefinition
 import com.intellij.lexer.FlexAdapter
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
@@ -26,7 +27,7 @@ internal class SimpleFileType private constructor() : LanguageFileType(SimpleLan
   override fun getName() = "Simple File"
   override fun getDescription() = "Simple language file"
   override fun getDefaultExtension() = "simple"
-  override fun getIcon(): Icon? = null
+  override fun getIcon(): Icon = IconLoader.getIcon("/icon.svg", javaClass)
 
   companion object {
     @JvmField
