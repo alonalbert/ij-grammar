@@ -67,14 +67,9 @@ qodana {
   showReport.set(System.getenv("QODANA_SHOW_REPORT").toBoolean())
 }
 
+
 tasks {
-  val generateParser = task<GenerateParser>("generateParser") {
-    source = "src/main/kotlin/com/github/alonalbert/ijgrammar/grammar/Simple.bnf"
-    targetRoot = "src/main/gen"
-    pathToParser = "/com/github/alonalbert/ijgrammar/grammar/SimpleParser.java"
-    pathToPsiRoot = "/com/github/alonalbert/ijgrammar/grammar/Simple.bnf"
-    purgeOldFiles = true
-  }
+  val parserTasks: List<GenerateParser> = findFiles("bnf").map { generateParser(it) }
 
   val generateLexer = task<GenerateLexer>("generateLexer") {
     source = "src/main/kotlin/com/github/alonalbert/ijgrammar/grammar/Simple.flex"
@@ -92,10 +87,8 @@ tasks {
     }
     withType<KotlinCompile> {
       kotlinOptions.jvmTarget = it
-      dependsOn(
-        generateParser,
-        generateLexer,
-      )
+      val deps = (parserTasks + generateLexer).toTypedArray()
+      dependsOn(deps)
     }
   }
 
@@ -156,4 +149,22 @@ tasks {
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
     channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
   }
+}
+
+fun generateParser(source: String) = task<GenerateParser>("generateParser-${File(source).nameWithoutExtension}") {
+  val srcRoot = "src/main"
+  this.source = source
+  targetRoot = "$srcRoot/gen"
+
+  val srcFile = File(source)
+  val grammarDir = srcFile.parent.substring("$srcRoot/kotlin/".length)
+  val grammarName = srcFile.nameWithoutExtension
+  pathToParser = "$grammarDir/${grammarName}Parser.java"
+  pathToPsiRoot = "$grammarDir/f"
+  purgeOldFiles = true
+}
+
+fun findFiles(extension: String): List<String> {
+  val removePrefix = project.rootDir.path.length + 1
+  return project.fileTree("src").filter { it.extension == extension }.map { it.path.substring(removePrefix) }
 }
