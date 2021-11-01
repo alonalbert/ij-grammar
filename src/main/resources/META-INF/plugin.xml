@@ -7,8 +7,6 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.alonalbert.ijgrammar.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.alonalbert.ijgrammar.services.MyProjectService"/>
 
         <fileType
                 name="Simple File"
@@ -22,10 +20,4 @@
                 implementationClass="com.github.alonalbert.ijgrammar.simple.SimpleParserDefinition"
         />
     </extensions>
-
-    <applicationListeners>
-        <listener
-                class="com.github.alonalbert.ijgrammar.listeners.MyProjectManagerListener"
-                topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 </idea-plugin>
