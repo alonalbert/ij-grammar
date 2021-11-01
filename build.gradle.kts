@@ -69,26 +69,18 @@ qodana {
 
 
 tasks {
-  val parserTasks: List<GenerateParser> = findFiles("bnf").map { generateParser(it) }
-
-  val generateLexer = task<GenerateLexer>("generateLexer") {
-    source = "src/main/kotlin/com/github/alonalbert/ijgrammar/grammar/Simple.flex"
-    targetDir = "src/main/gen/com/github/alonalbert/ijgrammar/grammar"
-    targetClass = "SimpleLexer"
-    purgeOldFiles = true
-  }
-
-
   // Set the JVM compatibility versions
   properties("javaVersion").let {
+    val parserTasks = findFiles("bnf").map { generateParser(it) }
+    val lexerTasks = findFiles("flex").map { generateLexer(it) }
+
     withType<JavaCompile> {
       sourceCompatibility = it
       targetCompatibility = it
     }
     withType<KotlinCompile> {
       kotlinOptions.jvmTarget = it
-      val deps = (parserTasks + generateLexer).toTypedArray()
-      dependsOn(deps)
+      dependsOn((parserTasks + lexerTasks).toTypedArray())
     }
   }
 
@@ -158,9 +150,17 @@ fun generateParser(source: String) = task<GenerateParser>("generateParser-${File
 
   val srcFile = File(source)
   val grammarDir = srcFile.parent.substring("$srcRoot/kotlin/".length)
-  val grammarName = srcFile.nameWithoutExtension
-  pathToParser = "$grammarDir/${grammarName}Parser.java"
+  pathToParser = "$grammarDir/${srcFile.nameWithoutExtension}Parser.java"
   pathToPsiRoot = "$grammarDir/f"
+  purgeOldFiles = true
+}
+
+fun generateLexer(source: String) = task<GenerateLexer>("generateLexer-${File(source).nameWithoutExtension}") {
+  val srcRoot = "src/main"
+  this.source = source
+  val srcFile = File(source)
+  targetDir = "src/main/gen/${srcFile.parent.substring("$srcRoot/kotlin/".length)}"
+  targetClass = "${srcFile.nameWithoutExtension}Lexer"
   purgeOldFiles = true
 }
 
