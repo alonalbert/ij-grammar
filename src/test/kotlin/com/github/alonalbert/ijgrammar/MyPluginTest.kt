@@ -15,7 +15,7 @@ import com.thoughtworks.qdox.model.expression.Not
 class MyPluginTest : BasePlatformTestCase() {
 
   fun testName() {
-    val text = "tag~: 1 & -tag:2 & tag:3 | -app~: 1 & app:2 & app:3 | tag: 10 & tag:20 & tag:30"
+    val text = "tag~: '1' & -tag:\"2\" & tag:3 | -app~: 1 & app:2 & app:3 | tag: 10 & tag:20 & tag:30"
     val root = parse(text)
 
     val expressions = PsiTreeUtil.getChildrenOfType(root, LogcatFilterExpression::class.java)
@@ -67,14 +67,14 @@ class MyPluginTest : BasePlatformTestCase() {
 private fun LogcatFilterExpression.toFilter(): Filter {
   return when (this) {
     is LogcatFilterLiteralExpression -> when (key.firstChild.elementType) {
-      LogcatFilterTypes.TAG -> TagFilter(value.text)
-      LogcatFilterTypes.RTAG -> TagRegexFilter(value.text)
-      LogcatFilterTypes.NTAG -> NotFilter(TagFilter(value.text))
-      LogcatFilterTypes.NRTAG -> NotFilter(TagRegexFilter(value.text))
-      LogcatFilterTypes.APP -> AppFilter(value.text)
-      LogcatFilterTypes.RAPP -> AppRegexFilter(value.text)
-      LogcatFilterTypes.NAPP -> NotFilter(AppFilter(value.text))
-      LogcatFilterTypes.NRAPP -> NotFilter(AppRegexFilter(value.text))
+      LogcatFilterTypes.TAG -> TagFilter(value.toText())
+      LogcatFilterTypes.RTAG -> TagRegexFilter(value.toText())
+      LogcatFilterTypes.NTAG -> NotFilter(TagFilter(value.toText()))
+      LogcatFilterTypes.NRTAG -> NotFilter(TagRegexFilter(value.toText()))
+      LogcatFilterTypes.APP -> AppFilter(value.toText())
+      LogcatFilterTypes.RAPP -> AppRegexFilter(value.toText())
+      LogcatFilterTypes.NAPP -> NotFilter(AppFilter(value.toText()))
+      LogcatFilterTypes.NRAPP -> NotFilter(AppRegexFilter(value.toText()))
       else -> throw IllegalArgumentException()
     }
     is LogcatFilterAndExpression -> AndFilter(flattenAndExpression(this).map { it.toFilter() })
@@ -82,6 +82,11 @@ private fun LogcatFilterExpression.toFilter(): Filter {
     else -> throw IllegalArgumentException()
   }
 }
+
+private fun LogcatFilterValue.toText() =
+  if (text.startsWith('\'') || text.startsWith('"')) text.substring(1, textLength - 1)
+  else text
+
 
 private interface Filter
 
@@ -94,6 +99,7 @@ private data class NotFilter(val filter: Filter) : Filter
 private data class AndFilter(val filters: List<Filter>) : Filter {
   constructor(vararg filters: Filter) : this(filters.asList())
 }
+
 private data class OrFilter(val filters: List<Filter>) : Filter {
   constructor(vararg filters: Filter) : this(filters.asList())
 }
