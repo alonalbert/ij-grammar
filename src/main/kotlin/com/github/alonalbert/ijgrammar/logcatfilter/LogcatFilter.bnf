@@ -1,0 +1,76 @@
+{
+  parserClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="LogcatFilter"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.github.alonalbert.ijgrammar.logcatfilter"
+  psiImplPackage="com.github.alonalbert.ijgrammar.logcatfilter.impl"
+
+  elementTypeHolderClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterTypes"
+  elementTypeClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterElementType"
+  tokenTypeClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterTokenType"
+
+  extends(".*Expression")=expression
+
+  tokens=[
+    space='regexp:\s+'
+    literaltext="regexp:[^ |&():\t'\"-]+"
+    quotedtext="regexp:('([^'\\]|\\.)*'|\"([^\"\\]|\\.)*\")"
+
+    AND='&'
+    OR='|'
+    LP='('
+    RP=')'
+    COLLON=':'
+    MINUS='-'
+
+    TAG = 'tag:'
+    NTAG = '-tag:'
+    RTAG = 'tag~:'
+    NRTAG = '-tag~:'
+    APP = 'app:'
+    NAPP = '-app:'
+    RAPP = 'app~:'
+    NRAPP = '-app~:'
+  ]
+}
+
+root ::= expression *
+
+// All branches here must end in "Expression"
+expression
+  ::= orExpression
+  |   andExpression
+  |   literalExpression
+  |   parenExpression
+
+orExpression ::= expression '|' expression
+andExpression ::= expression '&' expression
+
+literalExpression ::= key value
+
+//literalExpression
+//  ::= 'tag:' value
+//  |   '-tag:' value
+//  |   'tag~:' value
+//  |   '-tag~:' value
+//  |   'app:' value
+//  |   '-app:' value
+//  |   'app~:' value
+//  |   '-app~:' value
+
+parenExpression ::= '(' expression ')'
+
+key
+  ::= 'tag:'
+  |   '-tag:'
+  |   'tag~:'
+  |   '-tag~:'
+  |   'app:'
+  |   '-app:'
+  |   'app~:'
+  |   '-app~:'
+
+value ::= quotedtext | literaltext

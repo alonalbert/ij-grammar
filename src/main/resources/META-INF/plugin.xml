@@ -19,5 +19,17 @@
                 language="Simple"
                 implementationClass="com.github.alonalbert.ijgrammar.simple.SimpleParserDefinition"
         />
+
+        <fileType
+                name="LogcatFilter File"
+                implementationClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterFileType"
+                fieldName="INSTANCE"
+                language="LogcatFilter"
+                extensions="lcf"
+        />
+        <lang.parserDefinition
+                language="LogcatFilter"
+                implementationClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterParserDefinition"
+        />
     </extensions>
 </idea-plugin>
