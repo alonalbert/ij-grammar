@@ -12,14 +12,14 @@
 
         <fileType
                 name="Simple File"
-                implementationClass="com.github.alonalbert.ijgrammar.grammar.SimpleFileType"
+                implementationClass="com.github.alonalbert.ijgrammar.simple.SimpleFileType"
                 fieldName="INSTANCE"
                 language="Simple"
                 extensions="simple"
         />
         <lang.parserDefinition
                 language="Simple"
-                implementationClass="com.github.alonalbert.ijgrammar.grammar.SimpleParserDefinition"
+                implementationClass="com.github.alonalbert.ijgrammar.simple.SimpleParserDefinition"
         />
     </extensions>
 

@@ -1,4 +1,4 @@
-package com.github.alonalbert.ijgrammar.grammar
+package com.github.alonalbert.ijgrammar.simple
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.lang.ASTNode
