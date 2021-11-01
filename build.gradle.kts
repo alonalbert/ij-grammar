@@ -29,6 +29,7 @@ java.sourceSets["main"].java.srcDir(generatedSourcesPath)
 idea {
   module {
     generatedSourceDirs.add(generatedSourcesPath)
+
   }
 }
 
@@ -40,6 +41,9 @@ repositories {
   mavenCentral()
 }
 
+dependencies {
+  testImplementation("com.google.truth", "truth", "1.1.3")
+}
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
