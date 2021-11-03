@@ -24,4 +24,6 @@ expression
 
 orExpression ::= expression OR expression
 
-literalExpression ::= KEY SEPARATOR VALUE
+literalExpression
+  ::= KEY COLON VALUE
+  |   VALUE

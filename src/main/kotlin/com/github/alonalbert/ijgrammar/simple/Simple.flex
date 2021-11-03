@@ -27,15 +27,15 @@ DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
 
-KEY_TAG = "tag" | "app"
+KEY = "tag" | "app"
 
 %state HAS_KEY
 
 %%
 
 <YYINITIAL> {
-  {MINUS}? {KEY_TAG} {TILDE}?      { return SimpleTypes.KEY; }
-  {COLON}                          { yybegin(HAS_KEY);   return SimpleTypes.SEPARATOR; }
+  {MINUS}? {KEY} {TILDE}?      { return SimpleTypes.KEY; }
+  {COLON}                          { yybegin(HAS_KEY);   return SimpleTypes.COLON; }
   {OR}                             { return SimpleTypes.OR; }
 }
 
