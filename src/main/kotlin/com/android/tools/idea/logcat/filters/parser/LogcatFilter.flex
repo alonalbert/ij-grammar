@@ -24,7 +24,7 @@ AND = "&"
 LPAREN = "("
 RPAREN = ")"
 
-UNQUOTED_VALUE      = (\S | "\\ ")+
+UNQUOTED_VALUE      = ([^\s|&()] | "\\ ")+
 SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
 DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
