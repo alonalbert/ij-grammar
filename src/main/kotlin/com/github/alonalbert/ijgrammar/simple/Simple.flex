@@ -26,6 +26,8 @@ SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
 DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
+STANDALONE_UNQUOTED_VALUE = [^\s:]+
+STANDALONE_VALUE          = {STANDALONE_UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
 KEY = "tag" | "app"
 
@@ -34,9 +36,10 @@ KEY = "tag" | "app"
 %%
 
 <YYINITIAL> {
-  {MINUS}? {KEY} {TILDE}?      { return SimpleTypes.KEY; }
+  {MINUS}? {KEY} {TILDE}?          { return SimpleTypes.KEY; }
   {COLON}                          { yybegin(HAS_KEY);   return SimpleTypes.COLON; }
   {OR}                             { return SimpleTypes.OR; }
+  {STANDALONE_VALUE}               { return SimpleTypes.VALUE; }
 }
 
 <HAS_KEY> {
