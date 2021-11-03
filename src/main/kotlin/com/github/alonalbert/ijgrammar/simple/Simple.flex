@@ -20,13 +20,16 @@ COLON = ":"
 MINUS = "-"
 TILDE = "~"
 OR = "|"
+AND = "&"
+LPAREN = "("
+RPAREN = ")"
 
 UNQUOTED_VALUE      = (\S | "\\ ")+
 SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
 DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
-STANDALONE_UNQUOTED_VALUE = [^\s:]+
+STANDALONE_UNQUOTED_VALUE = [^\s:|&()]+
 STANDALONE_VALUE          = {STANDALONE_UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
 KEY = "tag" | "app"
@@ -36,10 +39,13 @@ KEY = "tag" | "app"
 %%
 
 <YYINITIAL> {
-  {MINUS}? {KEY} {TILDE}?          { return SimpleTypes.KEY; }
-  {COLON}                          { yybegin(HAS_KEY);   return SimpleTypes.COLON; }
-  {OR}                             { return SimpleTypes.OR; }
-  {STANDALONE_VALUE}               { return SimpleTypes.VALUE; }
+  {MINUS}? {KEY} {TILDE}?         { return SimpleTypes.KEY; }
+  {STANDALONE_VALUE}              { return SimpleTypes.VALUE; }
+  {COLON}                         { yybegin(HAS_KEY);   return SimpleTypes.COLON; }
+  {OR}                            { return SimpleTypes.OR; }
+  {AND}                           { return SimpleTypes.AND; }
+  {LPAREN}                        { return SimpleTypes.LPAREN; }
+  {RPAREN}                        { return SimpleTypes.RPAREN; }
 }
 
 <HAS_KEY> {

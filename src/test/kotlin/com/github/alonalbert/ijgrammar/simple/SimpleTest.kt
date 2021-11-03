@@ -16,7 +16,7 @@ class SimpleTest : BasePlatformTestCase() {
   fun testName() {
     val text =
       """
-        'foo:' tag:bar
+        tag:bar & tag:foo
       """.trim()
     val root = parse(text)
 
