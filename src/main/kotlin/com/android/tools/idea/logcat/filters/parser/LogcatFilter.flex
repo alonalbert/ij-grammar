@@ -23,33 +23,58 @@ OR = "|"
 AND = "&"
 LPAREN = "("
 RPAREN = ")"
+EQ = "="
+GT = ">"
+GTE = ">="
+LT = "<"
+LTE = "<="
 
 UNQUOTED_VALUE      = ([^\s|&()] | "\\ ")+
 SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
 DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
-STANDALONE_UNQUOTED_VALUE = [^\s:|&()]+
+STANDALONE_UNQUOTED_VALUE = [^\s:|&()<>=]+
 STANDALONE_VALUE          = {STANDALONE_UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
 KEY = "tag" | "app"
 
-%state KEY_VALUE
+LEVEL = "level"
+LEVEL_OP = {COLON} | {EQ} | {GT} | {GTE} | {LT} | {LTE}
+LEVEL_VALUE
+  = "V" | "VERBOSE"
+  | "D" | "DEBUG"
+  | "I" | "INFO"
+  | "W" | "WARN"  | "WARNING"
+  | "E" | "ERROR"
+  | "A" | "ASSERT"
+
 %state KEY
+%state KEY_VALUE
+
+%state LEVEL
+%state LEVEL_VALUE
 
 %%
 
 <YYINITIAL> {
   {MINUS}? {KEY} {TILDE}?         { yybegin(KEY); return LogcatFilterTypes.KEY; }
+
+  {LEVEL}                         { yybegin(LEVEL); return LogcatFilterTypes.LEVEL; }
+
   {STANDALONE_VALUE}              { return LogcatFilterTypes.VALUE; }
+
   {OR}                            { return LogcatFilterTypes.OR; }
   {AND}                           { return LogcatFilterTypes.AND; }
   {LPAREN}                        { return LogcatFilterTypes.LPAREN; }
   {RPAREN}                        { return LogcatFilterTypes.RPAREN; }
 }
 
-<KEY>        {COLON}              { yybegin(KEY_VALUE);   return LogcatFilterTypes.COLON; }
+<KEY>        {COLON}              { yybegin(KEY_VALUE);   return LogcatFilterTypes.SEP; }
 <KEY_VALUE>  {VALUE}              { yybegin(YYINITIAL); return LogcatFilterTypes.VALUE; }
+
+<LEVEL>      {LEVEL_OP}           { yybegin(LEVEL_VALUE);   return LogcatFilterTypes.SEP; }
+<LEVEL_VALUE>  {LEVEL_VALUE}      { yybegin(YYINITIAL); return LogcatFilterTypes.LEVEL_VALUE; }
 
 {WHITE_SPACE}+                     { return TokenType.WHITE_SPACE; }
 [^]                                { return TokenType.BAD_CHARACTER; }

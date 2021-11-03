@@ -6,6 +6,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.elementType
 import com.intellij.testFramework.TestDataPath
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -112,6 +113,17 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
     )
   }
 
+  fun testLevel() {
+    val psi = parse("level : V | level>=DEBUG")
+
+    assertThat(psi.toFilter()).isEqualTo(
+      OrFilter(
+        LevelFilter("V", ":"),
+        LevelFilter("DEBUG", ">="),
+      )
+    )
+  }
+
   private fun parse(text: String): PsiFile {
     val psi = PsiFileFactory.getInstance(project).createFileFromText("temp.simple", LogcatFilterFileType.INSTANCE, text)
     if (PsiTreeUtil.hasErrorElements(psi)) {
@@ -147,8 +159,22 @@ private fun LogcatFilterExpression.toFilter(): Filter {
 }
 
 private fun LogcatFilterLiteralExpression.literalToFilter() =
-  if (firstChild.elementType == LogcatFilterTypes.VALUE) TopFilter(firstChild.toText())
-  else KeyFilter(firstChild.text, lastChild.toText(), firstChild.text.startsWith('-'), firstChild.text.endsWith('~'))
+  when (firstChild.elementType) {
+    LogcatFilterTypes.VALUE -> TopFilter(firstChild.toText())
+    LogcatFilterTypes.KEY -> KeyFilter(this)
+    LogcatFilterTypes.LEVEL -> LevelFilter(this)
+    else -> throw ParseException("Unexpected elementType: $firstChild.elementType", -1)
+  }
+
+private fun PsiElement.getAllChildren(): Array<out PsiElement> {
+  var psiChild: PsiElement? = firstChild ?: return PsiElement.EMPTY_ARRAY
+  val result: MutableList<PsiElement> = ArrayList()
+  while (psiChild != null) {
+    result.add(psiChild)
+    psiChild = psiChild.nextSibling
+  }
+  return PsiUtilCore.toPsiElementArray(result)
+}
 
 private fun PsiElement.toText(): String {
   return when (elementType) {
@@ -176,7 +202,21 @@ private data class KeyFilter(
   val text: String,
   val isNegated: Boolean = false,
   val isRegex: Boolean = false
-) : Filter
+) : Filter {
+  constructor(element: PsiElement) : this(
+    element.firstChild.text,
+    element.lastChild.toText(),
+    element.firstChild.text.startsWith('-'),
+    element.firstChild.text.endsWith('~')
+  )
+}
+
+private data class LevelFilter(val level: String, val operator: String) : Filter {
+  constructor(element: PsiElement) : this(
+    element.lastChild.text,
+    element.getAllChildren().first { it.elementType == LogcatFilterTypes.SEP }.text
+  )
+}
 
 private data class AndFilter(val filters: List<Filter>) : Filter {
   constructor(vararg filters: Filter) : this(filters.asList())
