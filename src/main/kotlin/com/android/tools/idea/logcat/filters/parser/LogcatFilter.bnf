@@ -1,0 +1,35 @@
+{
+  parserClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="LogcatFilter"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.android.tools.idea.logcat.filters.parser"
+  psiImplPackage="com.android.tools.idea.logcat.filters.parser.impl"
+
+  elementTypeHolderClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterTypes"
+  elementTypeClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterElementType"
+  tokenTypeClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterTokenType"
+
+  extends(".*Expression")=expression
+}
+
+root ::= expression *
+
+// All branches here must end in "Expression"
+expression
+  ::= orExpression
+  |   andExpression
+  |   literalExpression
+  |   parenExpression
+
+orExpression ::= expression OR expression
+
+andExpression ::= expression AND expression
+
+literalExpression
+  ::= KEY COLON VALUE
+  |   VALUE
+
+parenExpression ::= LPAREN expression RPAREN

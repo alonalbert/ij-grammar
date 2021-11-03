@@ -22,14 +22,14 @@
 
         <fileType
                 name="LogcatFilter File"
-                implementationClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterFileType"
+                implementationClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterFileType"
                 fieldName="INSTANCE"
                 language="LogcatFilter"
                 extensions="lcf"
         />
         <lang.parserDefinition
                 language="LogcatFilter"
-                implementationClass="com.github.alonalbert.ijgrammar.logcatfilter.LogcatFilterParserDefinition"
+                implementationClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterParserDefinition"
         />
     </extensions>
 </idea-plugin>

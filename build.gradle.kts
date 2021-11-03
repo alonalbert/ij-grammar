@@ -147,7 +147,7 @@ tasks {
   }
 }
 
-fun generateParser(source: String) = task<GenerateParser>("generateParser-${File(source).nameWithoutExtension}") {
+fun generateParser(source: String) = task<GenerateParser>("generateParser-${File(source).path.replace('/', '.')}") {
   val srcRoot = "src/main"
   this.source = source
   targetRoot = "$srcRoot/gen"
