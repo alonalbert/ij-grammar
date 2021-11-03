@@ -16,26 +16,32 @@ import com.intellij.psi.TokenType;
 
 WHITE_SPACE=\s
 
-SEPARATOR = ":"
+COLON = ":"
 MINUS = "-"
 TILDE = "~"
 OR = "|"
 
-VALUE_CHAR=\S | "\\ "
-SINGLE_QUOTED_VALUE_CHAR=[^'] | \\'
+UNQUOTED_VALUE      = (\S | "\\ ")+
+SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
+DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
+VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
+
+
 KEY_TAG = "tag" | "app"
 
-%state WAITING_VALUE
+%state HAS_KEY
 
 %%
 
-<YYINITIAL> {MINUS}? {KEY_TAG} {TILDE}?                     { yybegin(YYINITIAL);     return SimpleTypes.KEY; }
-<YYINITIAL> {SEPARATOR}                                     { yybegin(WAITING_VALUE); return SimpleTypes.SEPARATOR; }
-<YYINITIAL> {OR}                                            { yybegin(YYINITIAL);     return SimpleTypes.OR; }
-<WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE; }
-<WAITING_VALUE> {VALUE_CHAR}+                               { yybegin(YYINITIAL);     return SimpleTypes.VALUE; }
-<WAITING_VALUE> ' {SINGLE_QUOTED_VALUE_CHAR}+ '             { yybegin(YYINITIAL);     return SimpleTypes.VALUE; }
+<YYINITIAL> {
+  {MINUS}? {KEY_TAG} {TILDE}?      { return SimpleTypes.KEY; }
+  {COLON}                          { yybegin(HAS_KEY);   return SimpleTypes.SEPARATOR; }
+  {OR}                             { return SimpleTypes.OR; }
+}
 
-{WHITE_SPACE}+                                              { yybegin(YYINITIAL);     return TokenType.WHITE_SPACE; }
+<HAS_KEY> {
+  {VALUE}                          { yybegin(YYINITIAL); return SimpleTypes.VALUE; }
+}
 
-[^]                                                         {                         return TokenType.BAD_CHARACTER; }
+{WHITE_SPACE}+                     { return TokenType.WHITE_SPACE; }
+[^]                                { return TokenType.BAD_CHARACTER; }

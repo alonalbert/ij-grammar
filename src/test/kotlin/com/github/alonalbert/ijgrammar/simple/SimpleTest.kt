@@ -14,7 +14,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 class SimpleTest : BasePlatformTestCase() {
 
   fun testName() {
-    val text = "-tag~: b\\ar | app: 'fo o\\''"
+    val text = """app: 'foo bar' tag: "bar foo" tag:foobar"""
     val root = parse(text)
 
 
