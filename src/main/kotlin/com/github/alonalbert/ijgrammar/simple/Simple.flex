@@ -13,33 +13,29 @@ import com.intellij.psi.TokenType;
 %unicode
 %function advance
 %type IElementType
-%eof{  return;
-%eof}
 
-CRLF=\R
-WHITE_SPACE=[\ \n\t\f]
-FIRST_VALUE_CHARACTER=[^ \n\f\\] | "\\"{CRLF} | "\\".
-VALUE_CHARACTER=[^\n\f\\] | "\\"{CRLF} | "\\".
-END_OF_LINE_COMMENT=("#"|"!")[^\r\n]*
-SEPARATOR=[:=]
-KEY_CHARACTER=[^:=\ \n\t\f\\] | "\\ "
+WHITE_SPACE=\s
+
+SEPARATOR = ":"
+MINUS = "-"
+TILDE = "~"
+OR = "|"
+
+VALUE_CHAR=\S | "\\ "
+SINGLE_QUOTED_VALUE_CHAR=[^'] | \\'
+KEY_TAG = "tag" | "app"
 
 %state WAITING_VALUE
 
 %%
 
-<YYINITIAL> {END_OF_LINE_COMMENT}                           { yybegin(YYINITIAL); return SimpleTypes.COMMENT; }
-
-<YYINITIAL> {KEY_CHARACTER}+                                { yybegin(YYINITIAL); return SimpleTypes.KEY; }
-
+<YYINITIAL> {MINUS}? {KEY_TAG} {TILDE}?                     { yybegin(YYINITIAL);     return SimpleTypes.KEY; }
 <YYINITIAL> {SEPARATOR}                                     { yybegin(WAITING_VALUE); return SimpleTypes.SEPARATOR; }
-
-<WAITING_VALUE> {CRLF}({CRLF}|{WHITE_SPACE})+               { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-
+<YYINITIAL> {OR}                                            { yybegin(YYINITIAL);     return SimpleTypes.OR; }
 <WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE; }
+<WAITING_VALUE> {VALUE_CHAR}+                               { yybegin(YYINITIAL);     return SimpleTypes.VALUE; }
+<WAITING_VALUE> ' {SINGLE_QUOTED_VALUE_CHAR}+ '             { yybegin(YYINITIAL);     return SimpleTypes.VALUE; }
 
-<WAITING_VALUE> {FIRST_VALUE_CHARACTER}{VALUE_CHARACTER}*   { yybegin(YYINITIAL); return SimpleTypes.VALUE; }
+{WHITE_SPACE}+                                              { yybegin(YYINITIAL);     return TokenType.WHITE_SPACE; }
 
-({CRLF}|{WHITE_SPACE})+                                     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-
-[^]                                                         { return TokenType.BAD_CHARACTER; }
+[^]                                                         {                         return TokenType.BAD_CHARACTER; }

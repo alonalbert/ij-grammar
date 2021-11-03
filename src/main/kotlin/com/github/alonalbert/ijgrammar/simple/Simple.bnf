@@ -11,10 +11,17 @@
   elementTypeHolderClass="com.github.alonalbert.ijgrammar.simple.SimpleTypes"
   elementTypeClass="com.github.alonalbert.ijgrammar.simple.SimpleElementType"
   tokenTypeClass="com.github.alonalbert.ijgrammar.simple.SimpleTokenType"
+
+  extends(".*Expression")=expression
 }
 
-simpleFile ::= item_*
+root ::= expression *
 
-private item_ ::= (property|COMMENT|CRLF)
+// All branches here must end in "Expression"
+expression
+  ::= orExpression
+  |   literalExpression
 
-property ::= (KEY? SEPARATOR VALUE?) | KEY
+orExpression ::= expression OR expression
+
+literalExpression ::= KEY SEPARATOR VALUE

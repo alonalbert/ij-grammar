@@ -1,6 +1,5 @@
-package com.github.alonalbert.ijgrammar
+package com.github.alonalbert.ijgrammar.logcatfilter
 
-import com.github.alonalbert.ijgrammar.logcatfilter.*
 import com.google.common.truth.Truth.assertThat
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
@@ -9,10 +8,9 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.testFramework.TestDataPath
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.thoughtworks.qdox.model.expression.Not
 
 @TestDataPath("\$CONTENT_ROOT/src/test/testData")
-class MyPluginTest : BasePlatformTestCase() {
+class LogcatFilterTest : BasePlatformTestCase() {
 
   fun testName() {
     val text = "tag~: '1' & -tag:\"2\" & tag:3 | -app~: 1 & app:2 & app:3 | tag: 10 & tag:20 & tag:30"
