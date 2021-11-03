@@ -34,23 +34,22 @@ STANDALONE_VALUE          = {STANDALONE_UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} 
 
 KEY = "tag" | "app"
 
-%state HAS_KEY
+%state KEY_VALUE
+%state KEY
 
 %%
 
 <YYINITIAL> {
-  {MINUS}? {KEY} {TILDE}?         { return LogcatFilterTypes.KEY; }
+  {MINUS}? {KEY} {TILDE}?         { yybegin(KEY); return LogcatFilterTypes.KEY; }
   {STANDALONE_VALUE}              { return LogcatFilterTypes.VALUE; }
-  {COLON}                         { yybegin(HAS_KEY);   return LogcatFilterTypes.COLON; }
   {OR}                            { return LogcatFilterTypes.OR; }
   {AND}                           { return LogcatFilterTypes.AND; }
   {LPAREN}                        { return LogcatFilterTypes.LPAREN; }
   {RPAREN}                        { return LogcatFilterTypes.RPAREN; }
 }
 
-<HAS_KEY> {
-  {VALUE}                          { yybegin(YYINITIAL); return LogcatFilterTypes.VALUE; }
-}
+<KEY>        {COLON}              { yybegin(KEY_VALUE);   return LogcatFilterTypes.COLON; }
+<KEY_VALUE>  {VALUE}              { yybegin(YYINITIAL); return LogcatFilterTypes.VALUE; }
 
 {WHITE_SPACE}+                     { return TokenType.WHITE_SPACE; }
 [^]                                { return TokenType.BAD_CHARACTER; }
