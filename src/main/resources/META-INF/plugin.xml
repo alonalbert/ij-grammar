@@ -19,17 +19,5 @@
                 language="Simple"
                 implementationClass="com.github.alonalbert.ijgrammar.simple.SimpleParserDefinition"
         />
-
-        <fileType
-                name="LogcatFilter File"
-                implementationClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterFileType"
-                fieldName="INSTANCE"
-                language="LogcatFilter"
-                extensions="lcf"
-        />
-        <lang.parserDefinition
-                language="LogcatFilter"
-                implementationClass="com.android.tools.idea.logcat.filters.parser.LogcatFilterParserDefinition"
-        />
     </extensions>
 </idea-plugin>
