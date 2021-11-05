@@ -29,18 +29,18 @@ GTE = ">="
 LT = "<"
 LTE = "<="
 
-UNQUOTED_VALUE      = ([^\s|&()] | "\\ ")+
+UNQUOTED_VALUE      = ([^\s()] | "\\ ")+
 SINGLE_QUOTED_VALUE = ' ([^'] | \\')* '
 DOUBLE_QUOTED_VALUE = \" ([^'] | \\')* \"
 VALUE               = {UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
-STANDALONE_UNQUOTED_VALUE = [^\s:|&()<>=]+
+STANDALONE_UNQUOTED_VALUE = [^\s()]+
 STANDALONE_VALUE          = {STANDALONE_UNQUOTED_VALUE} | {SINGLE_QUOTED_VALUE} | {DOUBLE_QUOTED_VALUE}
 
 KEY = "tag" | "app"
 
-LEVEL = "level"
-LEVEL_OP = {COLON} | {EQ} | {GT} | {GTE} | {LT} | {LTE}
+LEVEL_KEY = "level" | "fromLevel" | "toLevel"
+
 LEVEL_VALUE
   = "V" | "VERBOSE"
   | "D" | "DEBUG"
@@ -49,32 +49,26 @@ LEVEL_VALUE
   | "E" | "ERROR"
   | "A" | "ASSERT"
 
-%state KEY
 %state KEY_VALUE
-
-%state LEVEL
 %state LEVEL_VALUE
 
 %%
 
 <YYINITIAL> {
-  {MINUS}? {KEY} {TILDE}?         { yybegin(KEY); return LogcatFilterTypes.KEY; }
-
-  {LEVEL}                         { yybegin(LEVEL); return LogcatFilterTypes.LEVEL; }
-
-  {STANDALONE_VALUE}              { return LogcatFilterTypes.VALUE; }
+  {MINUS}? {KEY} {TILDE}? {COLON} { yybegin(KEY_VALUE); return LogcatFilterTypes.KEY; }
+  {LEVEL_KEY} {COLON}             { yybegin(LEVEL_VALUE); return LogcatFilterTypes.LEVEL_KEY; }
 
   {OR}                            { return LogcatFilterTypes.OR; }
   {AND}                           { return LogcatFilterTypes.AND; }
   {LPAREN}                        { return LogcatFilterTypes.LPAREN; }
   {RPAREN}                        { return LogcatFilterTypes.RPAREN; }
+
+  {STANDALONE_VALUE}              { return LogcatFilterTypes.VALUE; }
 }
 
-<KEY>        {COLON}              { yybegin(KEY_VALUE);   return LogcatFilterTypes.SEP; }
-<KEY_VALUE>  {VALUE}              { yybegin(YYINITIAL); return LogcatFilterTypes.VALUE; }
+<KEY_VALUE>    {VALUE}            { yybegin(YYINITIAL); return LogcatFilterTypes.VALUE; }
 
-<LEVEL>      {LEVEL_OP}           { yybegin(LEVEL_VALUE);   return LogcatFilterTypes.SEP; }
 <LEVEL_VALUE>  {LEVEL_VALUE}      { yybegin(YYINITIAL); return LogcatFilterTypes.LEVEL_VALUE; }
 
-{WHITE_SPACE}+                     { return TokenType.WHITE_SPACE; }
-[^]                                { return TokenType.BAD_CHARACTER; }
+{WHITE_SPACE}+                    { return TokenType.WHITE_SPACE; }
+[^]                               { return TokenType.BAD_CHARACTER; }

@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.android.tools.idea.logcat.filters.parser
 
 import com.google.common.truth.Truth.assertThat
@@ -6,7 +8,6 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.elementType
 import com.intellij.testFramework.TestDataPath
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -16,7 +17,7 @@ import java.text.ParseException
 class LogcatFilterParserTest : BasePlatformTestCase() {
 
   fun testImplicitAnd() {
-    val psi = parse("foo tag:bar app:foobar")
+    val psi = parse("foo tag: bar app: foobar")
 
     assertThat(psi.toFilter()).isEqualTo(
       AndFilter(
@@ -28,7 +29,7 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
   }
 
   fun testAnd() {
-    val psi = parse("tag:bar & foo & app:foobar")
+    val psi = parse("tag: bar & foo & app: foobar")
 
     assertThat(psi.toFilter()).isEqualTo(
       AndFilter(
@@ -40,7 +41,7 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
   }
 
   fun testOr() {
-    val psi = parse("tag:bar | foo | app:foobar")
+    val psi = parse("tag: bar | foo | app: foobar")
 
     assertThat(psi.toFilter()).isEqualTo(
       OrFilter(
@@ -68,21 +69,6 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
     )
   }
 
-  fun testParens_noWhiteSpaces() {
-    val psi = parse("f1&(f2|f3)&f4")
-
-    assertThat(psi.toFilter()).isEqualTo(
-      AndFilter(
-        TopFilter("f1"),
-        OrFilter(
-          TopFilter("f2"),
-          TopFilter("f3"),
-        ),
-        TopFilter("f4"),
-      )
-    )
-  }
-
   fun testParens() {
     val psi = parse("f1 & ( f2 | f3 ) & f4")
 
@@ -99,7 +85,7 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
   }
 
   fun testParensWithKey() {
-    val psi = parse("f1 & (tag: foo|app: 'bar') & f4")
+    val psi = parse("f1 & (tag: foo | app: 'bar') & f4")
 
     assertThat(psi.toFilter()).isEqualTo(
       AndFilter(
@@ -114,14 +100,35 @@ class LogcatFilterParserTest : BasePlatformTestCase() {
   }
 
   fun testLevel() {
-    val psi = parse("level : V | level>=DEBUG")
+    val psi = parse("level: V | fromLevel: DEBUG")
 
     assertThat(psi.toFilter()).isEqualTo(
       OrFilter(
-        LevelFilter("V", ":"),
-        LevelFilter("DEBUG", ">="),
+        KeyFilter("level", "V"),
+        KeyFilter("fromLevel", "DEBUG"),
       )
     )
+  }
+
+  fun test() {
+    val lexer = TestLexer(null)
+    val text = "If If_this_is_an_identifier"
+    lexer.reset(text, 0, text.length, 0)
+
+    while (true) {
+      lexer.yylex() ?: break
+    }
+  }
+
+  fun test2() {
+    val lexer = LogcatFilterLexer(null)
+    val text = "level: V | fromLevel: DEBUG"
+    lexer.reset(text, 0, text.length, 0)
+
+    while (true) {
+      val element = lexer.advance() ?: break
+      println("""${element.debugName}: "${lexer.yytext()}"""")
+    }
   }
 
   private fun parse(text: String): PsiFile {
@@ -161,20 +168,9 @@ private fun LogcatFilterExpression.toFilter(): Filter {
 private fun LogcatFilterLiteralExpression.literalToFilter() =
   when (firstChild.elementType) {
     LogcatFilterTypes.VALUE -> TopFilter(firstChild.toText())
-    LogcatFilterTypes.KEY -> KeyFilter(this)
-    LogcatFilterTypes.LEVEL -> LevelFilter(this)
+    LogcatFilterTypes.KEY, LogcatFilterTypes.LEVEL_KEY -> KeyFilter(this)
     else -> throw ParseException("Unexpected elementType: $firstChild.elementType", -1)
   }
-
-private fun PsiElement.getAllChildren(): Array<out PsiElement> {
-  var psiChild: PsiElement? = firstChild ?: return PsiElement.EMPTY_ARRAY
-  val result: MutableList<PsiElement> = ArrayList()
-  while (psiChild != null) {
-    result.add(psiChild)
-    psiChild = psiChild.nextSibling
-  }
-  return PsiUtilCore.toPsiElementArray(result)
-}
 
 private fun PsiElement.toText(): String {
   return when (elementType) {
@@ -204,17 +200,10 @@ private data class KeyFilter(
   val isRegex: Boolean = false
 ) : Filter {
   constructor(element: PsiElement) : this(
-    element.firstChild.text,
+    element.firstChild.text.trimEnd(':'),
     element.lastChild.toText(),
     element.firstChild.text.startsWith('-'),
-    element.firstChild.text.endsWith('~')
-  )
-}
-
-private data class LevelFilter(val level: String, val operator: String) : Filter {
-  constructor(element: PsiElement) : this(
-    element.lastChild.text,
-    element.getAllChildren().first { it.elementType == LogcatFilterTypes.SEP }.text
+    element.firstChild.text.endsWith("~:")
   )
 }
 
